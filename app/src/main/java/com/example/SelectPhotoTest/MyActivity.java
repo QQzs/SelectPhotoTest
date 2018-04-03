@@ -8,7 +8,6 @@ import android.graphics.BitmapFactory;
 import android.graphics.drawable.BitmapDrawable;
 import android.net.Uri;
 import android.os.Bundle;
-import android.provider.MediaStore;
 import android.view.Gravity;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -22,9 +21,6 @@ import android.widget.Toast;
 import com.example.SelectPhotoTest.Utils.PhotoUtil;
 
 import java.io.ByteArrayOutputStream;
-import java.io.File;
-
-import static com.example.SelectPhotoTest.Utils.PhotoUtil.IMAGE_FILE;
 
 public class MyActivity extends Activity implements View.OnClickListener{
     /**
@@ -41,13 +37,7 @@ public class MyActivity extends Activity implements View.OnClickListener{
     // TODO 拍照的 Uri
     private Uri mAvatarUri;
 
-
     private static final int PHOTO_PICKED_WITH_DATA = 1881;
-    private static final int CAMERA_WITH_DATA = 1882;
-    private static final int PHOTO_CROP_RESOULT = 1883;
-
-    private static final int ICON_SIZE = 450;
-
 
     @Override
     public void onCreate(Bundle savedInstanceState) {
@@ -84,7 +74,7 @@ public class MyActivity extends Activity implements View.OnClickListener{
             public void onClick(View v) {
                 mSetPhotoPop.dismiss();
                 // 拍照获取
-                doTakePhoto();
+                mAvatarUri = PhotoUtil.doTakePhoto(MyActivity.this);
             }
         });
         Button btnCheckFromGallery = (Button) mainView.findViewById(R.id.btn_check_from_gallery);
@@ -117,25 +107,6 @@ public class MyActivity extends Activity implements View.OnClickListener{
     }
 
     /**
-     * 调用系统相机拍照
-     */
-    protected void doTakePhoto() {
-        try {
-            File yunDir = new File(IMAGE_FILE);
-            if(!yunDir.exists()){
-                yunDir.mkdirs();
-            }
-            Intent intent = new Intent(MediaStore.ACTION_IMAGE_CAPTURE, null);
-            mAvatarUri = Uri.fromFile(new File(IMAGE_FILE, "avatar_test"));
-            intent.putExtra(MediaStore.EXTRA_OUTPUT, mAvatarUri);
-            startActivityForResult(intent, CAMERA_WITH_DATA);
-        } catch (ActivityNotFoundException e) {
-            Toast.makeText(this, R.string.photoPickerNotFoundText, Toast.LENGTH_LONG).show();
-        }
-
-    }
-
-    /**
      * 从相册选择图片
      */
     protected void doPickPhotoFromGallery() {
@@ -148,55 +119,6 @@ public class MyActivity extends Activity implements View.OnClickListener{
         }
     }
 
-    /**
-     * 相册裁剪图片
-     *
-     * @param uri
-     */
-    /*public void startPhotoZoom(Uri uri) {
-        Intent intent = new Intent("com.android.camera.action.CROP");//调用Android系统自带的一个图片剪裁页面,
-        intent.setDataAndType(uri, "image");
-        intent.putExtra("crop", "true");//进行修剪
-        // aspectX aspectY 是宽高的比例
-        intent.putExtra("aspectX", 1);
-        intent.putExtra("aspectY", 1);
-        // outputX outputY 是裁剪图片宽高
-        intent.putExtra("outputX", ICON_SIZE);
-        intent.putExtra("outputY", ICON_SIZE);
-        intent.putExtra("return-data", true);
-        startActivityForResult(intent, PHOTO_CROP_RESOULT);
-
-    }*/
-
-    /**
-     * 裁剪图片
-     * @param uri
-     */
-    public void startPhotoZoom(Uri uri) {
-
-        File yunDir = new File(IMAGE_FILE);
-        if(!yunDir.exists()){
-            yunDir.mkdirs();
-        }
-        imageUri = Uri.fromFile(new File(IMAGE_FILE ,"avatar_crop"));
-        Intent intent = new Intent("com.android.camera.action.CROP");
-        intent.setDataAndType(uri, "image/*");
-        intent.putExtra("crop", "true");
-        intent.putExtra("circleCrop", "true");
-        intent.putExtra("aspectX", 1);
-        intent.putExtra("aspectY", 1);
-        intent.putExtra("outputX", ICON_SIZE);
-        intent.putExtra("outputY", ICON_SIZE);
-        intent.putExtra(MediaStore.EXTRA_OUTPUT, imageUri);//图像输出
-        intent.putExtra("outputFormat",
-                Bitmap.CompressFormat.JPEG.toString());
-        intent.putExtra("noFaceDetection", true);
-        intent.putExtra("return-data", false);//回调方法data.getExtras().getParcelable("data")返回数据为空
-        startActivityForResult(intent, PHOTO_CROP_RESOULT);
-
-
-    }
-
     @Override
     protected void onActivityResult(int requestCode, int resultCode, Intent data) {
         super.onActivityResult(requestCode, resultCode, data);
@@ -205,26 +127,13 @@ public class MyActivity extends Activity implements View.OnClickListener{
             switch (requestCode) {
                 case PHOTO_PICKED_WITH_DATA:
                     // 相册选择图片后裁剪图片
-                    startPhotoZoom(data.getData());
+                    imageUri = PhotoUtil.startPhotoZoom(this,data.getData());
                     break;
-                case CAMERA_WITH_DATA:
+                case PhotoUtil.CAMERA_WITH_DATA:
                     // 相机拍照后裁剪图片
-                    // 判断是否有旋转度
-//                    Bitmap photoBitmap = PhotoUtil.readBitmapFromPath(this,IMAGE_FILE_PHOTO);
-//                    int degree = PhotoUtil.getExifOrientation(IMAGE_FILE_PHOTO);
-//                    if(degree != 0){
-//                        photoBitmap = PhotoUtil.rotaingImageView(photoBitmap,degree);
-//                        if(mCurrentPhotoFile == null){
-//                            mCurrentPhotoFile = new File(IMAGE_FILE_LOCATION);
-//                        }
-//                        mCurrentPhotoFile = PhotoUtil.saveBitmaptoSdCard(photoBitmap,this,"/Yun/Images");
-//                        startPhotoZoom(Uri.fromFile(mCurrentPhotoFile));
-//                    }else{
-//                        startPhotoZoom(mAvatarUri);
-//                    }
-                    startPhotoZoom(PhotoUtil.getImageUri(this,IMAGE_FILE+ "/avatar_test",mAvatarUri,"avatar_test"));
+                    imageUri = PhotoUtil.startPhotoZoom(this,PhotoUtil.getImageUri(this,mAvatarUri,"avatar_test"));
                     break;
-                case PHOTO_CROP_RESOULT:
+                case PhotoUtil.PHOTO_CROP_RESOULT:
                     Bitmap bitmap = null;
                     try {
                         bitmap = BitmapFactory.decodeStream(getContentResolver().openInputStream(imageUri));

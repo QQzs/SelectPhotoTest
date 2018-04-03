@@ -14,7 +14,13 @@ import android.provider.MediaStore;
 import android.util.Log;
 import android.widget.Toast;
 
-import java.io.*;
+import java.io.ByteArrayInputStream;
+import java.io.ByteArrayOutputStream;
+import java.io.File;
+import java.io.FileNotFoundException;
+import java.io.FileOutputStream;
+import java.io.IOException;
+import java.io.InputStream;
 import java.text.SimpleDateFormat;
 import java.util.Date;
 import java.util.Random;
@@ -26,31 +32,70 @@ public class PhotoUtil {
 
     public static final int SELECT_PIC = 2001;
     public static final int SELECT_PIC_KITKAT = 2002;
-    private static final int ICON_SIZE = 96;
-    public static final int CAMERA_WITH_DATAA = 3023;
+    private static final int ICON_SIZE = 450;
+
+    public static final int CAMERA_WITH_DATA = 1882;
+    public static final int PHOTO_CROP_RESOULT = 1883;
     // TODO 图片存放路径
     public static final String IMAGE_FILE = Environment.getExternalStorageDirectory()+"/Yun/Images";
 
+    private File mFile;
+
     /**
-     * 拍照选择
-     * @param activity
+     * 调用系统相机拍照
      */
-    public static String doTakePhoto(Activity activity){
+    public static Uri doTakePhoto(Activity activity) {
         String state = Environment.getExternalStorageState(); // 判断是否存在sd卡
-        if (state.equals(Environment.MEDIA_MOUNTED)) { // 调用系统的照相机
-            Intent intent = new Intent(MediaStore.ACTION_IMAGE_CAPTURE);
-            String fileName = getFileName(activity);
-//            String filePath = activity.getApplicationContext().getFilesDir().getAbsolutePath()+"/Yun/Images/"+fileName;
-            String filePath = Environment.getExternalStorageDirectory()+"/Yun/Images/"+fileName;
-            intent.putExtra(MediaStore.EXTRA_OUTPUT, Uri.fromFile(new File(filePath)));
-            intent.putExtra("image_path",filePath);
-            activity.startActivityForResult(intent, CAMERA_WITH_DATAA);
-            return filePath;
-        } else {
+        if (!state.equals(Environment.MEDIA_MOUNTED)){
             Toast.makeText(activity, "请检查手机是否有sd卡", Toast.LENGTH_SHORT).show();
             return null;
         }
+        try {
+            File file = new File(IMAGE_FILE);
+            if(!file.exists()){
+                file.mkdirs();
+            }
+            Intent intent = new Intent(MediaStore.ACTION_IMAGE_CAPTURE, null);
+            Uri uri = Uri.fromFile(new File(IMAGE_FILE, "avatar_test"));
+            intent.putExtra(MediaStore.EXTRA_OUTPUT, uri);
+            activity.startActivityForResult(intent, CAMERA_WITH_DATA);
+            return uri;
+        } catch (Exception e) {
+            Toast.makeText(activity, "打开相机失败", Toast.LENGTH_LONG).show();
+        }
+        return null;
+
     }
+
+    /**
+     * 裁剪图片
+     * @param uri
+     */
+    public static Uri startPhotoZoom(Activity activity,Uri uri) {
+
+        File file = new File(IMAGE_FILE);
+        if(!file.exists()){
+            file.mkdirs();
+        }
+        Uri imageUri = Uri.fromFile(new File(IMAGE_FILE ,"avatar_crop"));
+        Intent intent = new Intent("com.android.camera.action.CROP");
+        intent.setDataAndType(uri, "image/*");
+        intent.putExtra("crop", "true");
+        intent.putExtra("circleCrop", "true");
+        intent.putExtra("aspectX", 1);
+        intent.putExtra("aspectY", 1);
+        intent.putExtra("outputX", ICON_SIZE);
+        intent.putExtra("outputY", ICON_SIZE);
+        intent.putExtra(MediaStore.EXTRA_OUTPUT, imageUri);//图像输出
+        intent.putExtra("outputFormat",
+                Bitmap.CompressFormat.JPEG.toString());
+        intent.putExtra("noFaceDetection", true);
+        intent.putExtra("return-data", false);//回调方法data.getExtras().getParcelable("data")返回数据为空
+        activity.startActivityForResult(intent, PHOTO_CROP_RESOULT);
+        return imageUri;
+
+    }
+
 
     /**
      * 拍照产生临时文件名
@@ -126,13 +171,13 @@ public class PhotoUtil {
     /**
      * 获取uri
      * @param context
-     * @param filePath
      * @param uri
      * @return
      */
-    public static Uri getImageUri(Activity context,String filePath,Uri uri,String filename){
-        Bitmap photoBitmap = readBitmapFromPath(context,filePath);
-        int degree = getExifOrientation(filePath);
+    public static Uri getImageUri(Activity context,Uri uri,String filename){
+        Bitmap photoBitmap = readBitmapFromPath(context,IMAGE_FILE + "/" + filename);
+        // 判断是否有旋转度
+        int degree = getExifOrientation(IMAGE_FILE + "/" + filename);
         if(degree != 0){
             photoBitmap = PhotoUtil.rotaingImageView(photoBitmap,degree);
             File file = PhotoUtil.saveBitmaptoSdCard(photoBitmap,context,filename);
@@ -428,17 +473,15 @@ public class PhotoUtil {
      */
     public static File saveBitmaptoSdCard(Bitmap bm,Activity mContext,String filename){
         if(Environment.getExternalStorageState().equals(Environment.MEDIA_MOUNTED)){
-            File yunDir = new File(IMAGE_FILE);
-            if(!yunDir.exists()){
-                yunDir.mkdirs();
+            File file = new File(IMAGE_FILE);
+            if(!file.exists()){
+                file.mkdirs();
             }
             FileOutputStream fos;
             ByteArrayOutputStream baos = new ByteArrayOutputStream();
             bm.compress(Bitmap.CompressFormat.JPEG, 100, baos);
             byte[] buffer = baos.toByteArray();
-            File f = new File(yunDir,filename);
-            if (!f.exists()) {
-            }
+            File f = new File(file,filename);
             try {
                 f.createNewFile();
                 fos = new FileOutputStream(f);
