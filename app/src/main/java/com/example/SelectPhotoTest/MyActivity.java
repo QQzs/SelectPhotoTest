@@ -27,6 +27,8 @@ import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.io.FileNotFoundException;
 
+import static com.example.SelectPhotoTest.Utils.PhotoUtil.IMAGE_FILE;
+
 public class MyActivity extends Activity implements View.OnClickListener{
     /**
      * Called when the activity is first created.
@@ -43,11 +45,11 @@ public class MyActivity extends Activity implements View.OnClickListener{
     // TODO 拍照的 Uri
     private Uri mAvatarUri;
     // TODO 图片存放路径
-    private static final String IMAGE_FILE = Environment.getExternalStorageDirectory()+"/Yun/Images";
+//    private static final String IMAGE_FILE = Environment.getExternalStorageDirectory()+"/Yun/Images";
     // TODO 拍照的文件名
-    private static final String IMAGE_FILE_PHOTO = Environment.getExternalStorageDirectory()+"/Yun/Images/avatar_test";
+//    private static final String IMAGE_FILE_PHOTO = Environment.getExternalStorageDirectory()+"/Yun/Images/avatar_test";
     // TODO 截图的文件名
-    private static final String IMAGE_FILE_LOCATION = Environment.getExternalStorageDirectory()+"/Yun/Images/avatar_crop";
+//    private static final String IMAGE_FILE_LOCATION = Environment.getExternalStorageDirectory()+"/Yun/Images/avatar_crop";
 
 
     private static final int PHOTO_PICKED_WITH_DATA = 1881;
@@ -187,7 +189,7 @@ public class MyActivity extends Activity implements View.OnClickListener{
         if(!yunDir.exists()){
             yunDir.mkdirs();
         }
-        imageUri = Uri.fromFile(new File(IMAGE_FILE_LOCATION));
+        imageUri = Uri.fromFile(new File(IMAGE_FILE + "/avatar_crop"));
         Intent intent = new Intent("com.android.camera.action.CROP");
         intent.setDataAndType(uri, "image/*");
         intent.putExtra("crop", "true");
@@ -230,18 +232,19 @@ public class MyActivity extends Activity implements View.OnClickListener{
                 case CAMERA_WITH_DATA:
                     // 相机拍照后裁剪图片
                     // 判断是否有旋转度
-                    Bitmap photoBitmap = PhotoUtil.readBitmapFromPath(this,IMAGE_FILE_PHOTO);
-                    int degree = PhotoUtil.getExifOrientation(IMAGE_FILE_PHOTO);
-                    if(degree != 0){
-                        photoBitmap = PhotoUtil.rotaingImageView(photoBitmap,degree);
-                        if(mCurrentPhotoFile == null){
-                            mCurrentPhotoFile = new File(IMAGE_FILE_LOCATION);
-                        }
-                        mCurrentPhotoFile = PhotoUtil.saveBitmaptoSdCard(photoBitmap,this,"/Yun/Images");
-                        startPhotoZoom(Uri.fromFile(mCurrentPhotoFile));
-                    }else{
-                        startPhotoZoom(mAvatarUri);
-                    }
+//                    Bitmap photoBitmap = PhotoUtil.readBitmapFromPath(this,IMAGE_FILE_PHOTO);
+//                    int degree = PhotoUtil.getExifOrientation(IMAGE_FILE_PHOTO);
+//                    if(degree != 0){
+//                        photoBitmap = PhotoUtil.rotaingImageView(photoBitmap,degree);
+//                        if(mCurrentPhotoFile == null){
+//                            mCurrentPhotoFile = new File(IMAGE_FILE_LOCATION);
+//                        }
+//                        mCurrentPhotoFile = PhotoUtil.saveBitmaptoSdCard(photoBitmap,this,"/Yun/Images");
+//                        startPhotoZoom(Uri.fromFile(mCurrentPhotoFile));
+//                    }else{
+//                        startPhotoZoom(mAvatarUri);
+//                    }
+                    startPhotoZoom(PhotoUtil.getImageUri(this,IMAGE_FILE+ "/avatar_test",mAvatarUri,"avatar_test"));
                     break;
                 case PHOTO_CROP_RESOULT:
                     try {

@@ -28,8 +28,8 @@ public class PhotoUtil {
     public static final int SELECT_PIC_KITKAT = 2002;
     private static final int ICON_SIZE = 96;
     public static final int CAMERA_WITH_DATAA = 3023;
-    public static final String FOLDER_IMAGES_THUMBNAILS="/Yun/Images/Thumbnails/";//聊天收到的缩略图
-    public static final String FOLDER_IMAGES_ORIGINAL="/Yun/Images/Original/";//聊天收到的原图
+    // TODO 图片存放路径
+    public static final String IMAGE_FILE = Environment.getExternalStorageDirectory()+"/Yun/Images";
 
     /**
      * 拍照选择
@@ -57,8 +57,7 @@ public class PhotoUtil {
      * @return
      */
     private static String getFileName(Activity activity) {
-        String saveDir = Environment.getExternalStorageDirectory()+ "/Yun/Images";
-        File dir = new File(saveDir);
+        File dir = new File(IMAGE_FILE);
         if (!dir.exists()) {
             dir.mkdirs(); // 创建文件夹
         }
@@ -122,6 +121,26 @@ public class PhotoUtil {
                 return null;
             }
         }
+    }
+
+    /**
+     * 获取uri
+     * @param context
+     * @param filePath
+     * @param uri
+     * @return
+     */
+    public static Uri getImageUri(Activity context,String filePath,Uri uri,String filename){
+        Bitmap photoBitmap = readBitmapFromPath(context,filePath);
+        int degree = getExifOrientation(filePath);
+        if(degree != 0){
+            photoBitmap = PhotoUtil.rotaingImageView(photoBitmap,degree);
+            File file = PhotoUtil.saveBitmaptoSdCard(photoBitmap,context,filename);
+            return Uri.fromFile(file);
+        }else{
+            return uri;
+        }
+
     }
 
     /**
@@ -366,59 +385,13 @@ public class PhotoUtil {
     }
 
     /**
-     * 保存图片到sd卡
-     * @param bm
-     * @param mContext
-     * @param fileDir "/Yun/Images/Thumbnails"--收到的聊天缩略图  "/Yun/Images/Original"--收到的聊天原图  "/Yun/Images/"--其他
-     * @return
-     */
-    public static String saveBitmaptoSdCard(Bitmap bm,Activity mContext,String fileDir,String url) {
-        if(Environment.getExternalStorageState().equals(Environment.MEDIA_MOUNTED)){
-            File sdCardDir = Environment.getExternalStorageDirectory();
-            File yaoYanDir = new File(sdCardDir.getPath()+fileDir);
-            if(!yaoYanDir.exists()){
-                yaoYanDir.mkdirs();
-            }
-            String filename="";
-            if(FOLDER_IMAGES_ORIGINAL.equals(fileDir)){
-                filename=url.split("/")[url.split("/").length-1];
-            }else{
-                filename = getRandomFileName();
-            }
-            FileOutputStream fos;
-            ByteArrayOutputStream baos = new ByteArrayOutputStream();
-            bm.compress(Bitmap.CompressFormat.JPEG, 90, baos);
-            byte[] buffer = baos.toByteArray();
-            File f = new File(yaoYanDir,filename);
-            if (!f.exists()) {
-                try {
-                    f.createNewFile();
-                    fos = new FileOutputStream(f);
-                    fos.write(buffer,0,buffer.length);
-                    fos.flush();
-                    fos.close();
-                } catch (FileNotFoundException e) {
-                    e.printStackTrace();
-                } catch (IOException e) {
-                    e.printStackTrace();
-                }
-            }
-            return filename;
-        }else{
-            Toast.makeText(mContext, "sd卡不存在", Toast.LENGTH_SHORT).show();
-            return null;
-        }
-    }
-
-    /**
-     * 保存图片到sd卡
+     * 保存图片到sd卡 名字随机
      * @param bm
      * @return
      */
-    public static String saveBitmaptoSdCard(Bitmap bm,String fileDir) {
+    public static String saveBitmaptoSdCard(Bitmap bm) {
         if(Environment.getExternalStorageState().equals(Environment.MEDIA_MOUNTED)){
-            File sdCardDir = Environment.getExternalStorageDirectory();
-            File yaoYanDir = new File(sdCardDir.getPath() + fileDir);
+            File yaoYanDir = new File(IMAGE_FILE);
             if(!yaoYanDir.exists()){
                 yaoYanDir.mkdirs();
             }
@@ -448,14 +421,17 @@ public class PhotoUtil {
         }
     }
 
-    public static File saveBitmaptoSdCard(Bitmap bm,Activity mContext,String fileDir) {
+    /**
+     * 保存图片到sd卡 名字固定
+     * @param bm
+     * @return
+     */
+    public static File saveBitmaptoSdCard(Bitmap bm,Activity mContext,String filename){
         if(Environment.getExternalStorageState().equals(Environment.MEDIA_MOUNTED)){
-            File sdCardDir = Environment.getExternalStorageDirectory();
-            File yunDir = new File(sdCardDir.getPath()+fileDir);
+            File yunDir = new File(IMAGE_FILE);
             if(!yunDir.exists()){
                 yunDir.mkdirs();
             }
-            String filename = "avatar_test";
             FileOutputStream fos;
             ByteArrayOutputStream baos = new ByteArrayOutputStream();
             bm.compress(Bitmap.CompressFormat.JPEG, 100, baos);
