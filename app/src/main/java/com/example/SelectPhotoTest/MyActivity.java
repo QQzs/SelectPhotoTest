@@ -2,14 +2,12 @@ package com.example.SelectPhotoTest;
 
 import android.app.Activity;
 import android.content.ActivityNotFoundException;
-import android.content.Context;
 import android.content.Intent;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.graphics.drawable.BitmapDrawable;
 import android.net.Uri;
 import android.os.Bundle;
-import android.os.Environment;
 import android.provider.MediaStore;
 import android.view.Gravity;
 import android.view.LayoutInflater;
@@ -25,7 +23,6 @@ import com.example.SelectPhotoTest.Utils.PhotoUtil;
 
 import java.io.ByteArrayOutputStream;
 import java.io.File;
-import java.io.FileNotFoundException;
 
 import static com.example.SelectPhotoTest.Utils.PhotoUtil.IMAGE_FILE;
 
@@ -39,22 +36,16 @@ public class MyActivity extends Activity implements View.OnClickListener{
     private PopupWindow mSetPhotoPop;
 
     private LinearLayout mMainView;
-    private File mCurrentPhotoFile;
     // TODO 截图后的 Uri
     private Uri imageUri;
     // TODO 拍照的 Uri
     private Uri mAvatarUri;
-    // TODO 图片存放路径
-//    private static final String IMAGE_FILE = Environment.getExternalStorageDirectory()+"/Yun/Images";
-    // TODO 拍照的文件名
-//    private static final String IMAGE_FILE_PHOTO = Environment.getExternalStorageDirectory()+"/Yun/Images/avatar_test";
-    // TODO 截图的文件名
-//    private static final String IMAGE_FILE_LOCATION = Environment.getExternalStorageDirectory()+"/Yun/Images/avatar_crop";
 
 
     private static final int PHOTO_PICKED_WITH_DATA = 1881;
     private static final int CAMERA_WITH_DATA = 1882;
     private static final int PHOTO_CROP_RESOULT = 1883;
+
     private static final int ICON_SIZE = 450;
 
 
@@ -135,9 +126,7 @@ public class MyActivity extends Activity implements View.OnClickListener{
                 yunDir.mkdirs();
             }
             Intent intent = new Intent(MediaStore.ACTION_IMAGE_CAPTURE, null);
-            mAvatarUri = Uri.fromFile(new File(Environment
-                    .getExternalStorageDirectory(), "/Yun/Images/avatar_test"
-                    ));
+            mAvatarUri = Uri.fromFile(new File(IMAGE_FILE, "avatar_test"));
             intent.putExtra(MediaStore.EXTRA_OUTPUT, mAvatarUri);
             startActivityForResult(intent, CAMERA_WITH_DATA);
         } catch (ActivityNotFoundException e) {
@@ -189,7 +178,7 @@ public class MyActivity extends Activity implements View.OnClickListener{
         if(!yunDir.exists()){
             yunDir.mkdirs();
         }
-        imageUri = Uri.fromFile(new File(IMAGE_FILE + "/avatar_crop"));
+        imageUri = Uri.fromFile(new File(IMAGE_FILE ,"avatar_crop"));
         Intent intent = new Intent("com.android.camera.action.CROP");
         intent.setDataAndType(uri, "image/*");
         intent.putExtra("crop", "true");
@@ -206,17 +195,6 @@ public class MyActivity extends Activity implements View.OnClickListener{
         startActivityForResult(intent, PHOTO_CROP_RESOULT);
 
 
-    }
-
-    private Bitmap getBitmapFromUri(Uri uri, Context mContext) {
-        Bitmap bitmap = null;
-        try {
-            bitmap = BitmapFactory.decodeStream(getContentResolver().openInputStream(uri));
-        } catch (FileNotFoundException e) {
-            e.printStackTrace();
-            return null;
-        }
-        return bitmap;
     }
 
     @Override
@@ -247,11 +225,14 @@ public class MyActivity extends Activity implements View.OnClickListener{
                     startPhotoZoom(PhotoUtil.getImageUri(this,IMAGE_FILE+ "/avatar_test",mAvatarUri,"avatar_test"));
                     break;
                 case PHOTO_CROP_RESOULT:
+                    Bitmap bitmap = null;
                     try {
-                        Bitmap bitmap = getBitmapFromUri(imageUri,this);
-                        mImage.setImageBitmap(bitmap);
+                        bitmap = BitmapFactory.decodeStream(getContentResolver().openInputStream(imageUri));
                     }catch (Exception e){
                         Toast.makeText(this,"失败，请重新设置",Toast.LENGTH_SHORT).show();
+                    }
+                    if (bitmap != null){
+                        mImage.setImageBitmap(bitmap);
                     }
                     break;
 
