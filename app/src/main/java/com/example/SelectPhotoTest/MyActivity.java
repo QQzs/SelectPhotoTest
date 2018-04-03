@@ -38,7 +38,6 @@ public class MyActivity extends Activity implements View.OnClickListener{
 
     private LinearLayout mMainView;
     private File mCurrentPhotoFile;
-    private Bitmap imageBitmap;
     // TODO 截图后的 Uri
     private Uri imageUri;
     // TODO 拍照的 Uri
@@ -62,13 +61,6 @@ public class MyActivity extends Activity implements View.OnClickListener{
         super.onCreate(savedInstanceState);
         setContentView(R.layout.main);
         initView();
-        //imageUri = Uri.fromFile(new File(IMAGE_FILE_LOCATION));
-
-        //IMAGE_FILE_LOCATION 必须加上file:// ，否则 java.io.FileNotFoundException: No content provider
-        //或者提示 无法保存编辑过的图片
-        //具体原因可以查看 android.content.ContentResolver.openInputStream(Uri)
-        /*String IMAGE_FILE_LOCATION = "file://"+android.os.Environment.getExternalStorageDirectory().getPath()+"/Yun/Images/my_image.jpg";
-        imageUri = Uri.parse(IMAGE_FILE_LOCATION);*/
     }
 
     public void initView(){
@@ -185,6 +177,10 @@ public class MyActivity extends Activity implements View.OnClickListener{
 
     }*/
 
+    /**
+     * 裁剪图片
+     * @param uri
+     */
     public void startPhotoZoom(Uri uri) {
 
         File yunDir = new File(IMAGE_FILE);
@@ -192,7 +188,6 @@ public class MyActivity extends Activity implements View.OnClickListener{
             yunDir.mkdirs();
         }
         imageUri = Uri.fromFile(new File(IMAGE_FILE_LOCATION));
-
         Intent intent = new Intent("com.android.camera.action.CROP");
         intent.setDataAndType(uri, "image/*");
         intent.putExtra("crop", "true");
