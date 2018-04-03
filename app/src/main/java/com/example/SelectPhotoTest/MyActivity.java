@@ -4,7 +4,6 @@ import android.app.Activity;
 import android.content.ActivityNotFoundException;
 import android.content.Intent;
 import android.graphics.Bitmap;
-import android.graphics.BitmapFactory;
 import android.graphics.drawable.BitmapDrawable;
 import android.net.Uri;
 import android.os.Bundle;
@@ -136,7 +135,9 @@ public class MyActivity extends Activity implements View.OnClickListener{
                 case PhotoUtil.PHOTO_CROP_RESOULT:
                     Bitmap bitmap = null;
                     try {
-                        bitmap = BitmapFactory.decodeStream(getContentResolver().openInputStream(imageUri));
+//                        bitmap = BitmapFactory.decodeStream(getContentResolver().openInputStream(imageUri));
+                        bitmap = PhotoUtil.readBitmapFromPath(this,PhotoUtil.IMAGE_FILE + "/avatar_crop");
+
                     }catch (Exception e){
                         Toast.makeText(this,"失败，请重新设置",Toast.LENGTH_SHORT).show();
                     }
