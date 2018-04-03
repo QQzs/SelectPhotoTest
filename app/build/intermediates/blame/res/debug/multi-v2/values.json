@@ -1,0 +1,38 @@
+{
+    "logs": [
+        {
+            "outputFile": "D:\\MyWork\\code\\github5\\SelectPhotoTest\\app\\build\\intermediates\\incremental\\mergeDebugResources\\merged.dir\\values\\values.xml",
+            "map": [
+                {
+                    "source": "D:\\MyWork\\code\\github5\\SelectPhotoTest\\app\\src\\main\\res\\values\\strings.xml",
+                    "from": {
+                        "startLines": "2,3",
+                        "startColumns": "4,4",
+                        "startOffsets": "55,108",
+                        "endColumns": "52,61",
+                        "endOffsets": "103,165"
+                    }
+                },
+                {
+                    "source": "D:\\MyWork\\code\\github5\\SelectPhotoTest\\app\\src\\main\\res\\values\\styles.xml",
+                    "from": {
+                        "startLines": "3",
+                        "startColumns": "4",
+                        "startOffsets": "56",
+                        "endLines": "6",
+                        "endColumns": "12",
+                        "endOffsets": "259"
+                    },
+                    "to": {
+                        "startLines": "4",
+                        "startColumns": "4",
+                        "startOffsets": "170",
+                        "endLines": "7",
+                        "endColumns": "12",
+                        "endOffsets": "373"
+                    }
+                }
+            ]
+        }
+    ]
+}

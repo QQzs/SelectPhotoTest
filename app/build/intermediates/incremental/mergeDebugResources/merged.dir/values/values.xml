@@ -1,0 +1,9 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="app_name">SelectPhotoTest</string>
+    <string name="photoPickerNotFoundText">手机中无可用的图片</string>
+    <style name="bottomStyle">
+        <item name="android:windowEnterAnimation">@anim/bottom_pup_anim_out</item>
+        <item name="android:windowExitAnimation">@anim/bottom_pup_anim_in</item>
+    </style>
+</resources>
